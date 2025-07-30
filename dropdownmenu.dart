@@ -1,5 +1,3 @@
-// @dart=2.9
-
 // ignore_for_file: must_be_immutable, deprecated_member_use, prefer_typing_uninitialized_variables, unused_field, prefer_final_fields
 
 import 'package:flutter/material.dart';
@@ -75,11 +73,6 @@ class _DropDownMenuState extends State<DropDownMenu> with TickerProviderStateMix
       'Template A': true,
       'Template B': true,
       'Template C': true,
-      'Template D': true,
-      'Template E': true,
-      'Template F': true,
-      'Template G': true,
-      'Template H': true,
     };
     if (settingsVisibility.values.every((v) => v == false)) {
       settingsVisibility = {
@@ -96,62 +89,44 @@ class _DropDownMenuState extends State<DropDownMenu> with TickerProviderStateMix
     }
   }
 
-  void _showDropdown() {
-    final RenderBox renderBox = _actionKey.currentContext.findRenderObject() as RenderBox;
+   void _showDropdown() {
+    final RenderBox renderBox = _actionKey.currentContext!.findRenderObject() as RenderBox;
     final size = renderBox.size;
-    const double tileHeight = 60.0;
     final visibleTemplates = settingsVisibility.entries.where((entry) => entry.value).map((entry) => entry.key).toList();
-    final double dropdownHeight = visibleTemplates.length * tileHeight;
+    const double dropdownHeight = 200;
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        width: 230,
+        width: size.width,
         child: CompositedTransformFollower(
-          offset: Offset(30.0, size.height + 5),
+          offset: Offset(0.0, size.height + 5),
           link: _layerLink,
           showWhenUnlinked: false,
           child: Material(
-            elevation: 2,
-            borderRadius: BorderRadius.circular(8),
+            elevation: 0,
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SlideTransition(
                 position: _slideAnimation,
                 child: Container(
                   constraints: BoxConstraints(
-                    maxHeight: visibleTemplates.length > 5 ? tileHeight * 5 : visibleTemplates.isEmpty ? 50 : dropdownHeight,
+                    maxHeight: visibleTemplates.contains("No Settings Found") ? 60 : dropdownHeight,
                   ),
+                  margin: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: visibleTemplates.isEmpty
+                  child: visibleTemplates.contains("No Settings Found")
                       ? Center(
-                    child: Text(
-                      'No Settings Found',
-                      style: Theme.of(context).textTheme.subtitle1,
-                    ),
-                  )
-                      : ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: visibleTemplates.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(visibleTemplates[index],style: Theme.of(context).textTheme.subtitle1.copyWith(fontWeight: FontWeight.bold)),
-                        onTap: () {
-                          _removeDropdown();
-                          // if(visibleTemplates[index] == "TDS") {
-                          //   Map empContract = {
-                          //     "contractEmployeeId": contractEmployeeId,
-                          //     "contractId": contractId
-                          //   };
-                          //   Navigator.of(context).push(MaterialPageRoute(
-                          //     builder: (context) => ApplyTds(arguments: empContract),
-                          //   ));
-                          // }
-                        },
-                      );
-                    },
-                  ),
+                          child: Text(
+                            'No Settings Found',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        )
+                      : buildGridView(),
                 ),
               ),
             ),
@@ -159,7 +134,7 @@ class _DropDownMenuState extends State<DropDownMenu> with TickerProviderStateMix
         ),
       ),
     );
-    Overlay.of(context).insert(_overlayEntry);
+    Overlay.of(context).insert(_overlayEntry!);
     _animationController.forward();
     setState(() {
       isDropdownOpen = true;
@@ -214,44 +189,122 @@ class _DropDownMenuState extends State<DropDownMenu> with TickerProviderStateMix
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CompositedTransformTarget(
-              link: _layerLink,
-              child: GestureDetector(
-                key: _actionKey,
-                onTap: _toggleDropdown,
-                child: Container(
-                  width: 230,
-                  margin: const EdgeInsets.only(left: 30,bottom: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Payroll Settings",
-                        style: Theme.of(context).textTheme.subtitle1.copyWith(color: Colors.black87, fontSize: 16),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(0),
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Theme.of(context).primaryColor.withOpacity(0.2)
+             CompositedTransformTarget(
+                link: _layerLink,
+                child: GestureDetector(
+                  key: _actionKey,
+                  onTap: _toggleDropdown,
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey.shade300, width: 1),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
                         ),
-                        child: Icon(
-                          isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                          size: 25,
-                          color: Theme.of(context).primaryColor,
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                              child: Icon(
+                                Icons.tune,
+                                color: Theme.of(context).primaryColor,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Text(
+                              "Payroll Settings".tr(),
+                              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                        AnimatedRotation(
+                          turns: isDropdownOpen ? 0.5 : 0.0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            Icons.expand_more,
+                            size: 28,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+             ),
           ],
+        ),
+      ),
+    );
+  }
+  
+  GridView buildGridView() {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(12),
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      childAspectRatio: 1.35,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+          _contractFeatureCard(
+            svgAsset: 'assets/images/tds_card.svg',
+            title: "Tax".tr(),
+            progressColor: Colors.pink,
+          ),
+          _contractFeatureCard(
+            svgAsset: 'assets/images/salary.svg',
+            title: "Annual Salary".tr(),
+            progressColor: Colors.indigo,
+          ),
+      ],
+    );
+  }
+
+  Widget _contractFeatureCard({String? title, Color? progressColor, String? svgAsset}) {
+    return GestureDetector(
+      onTap: () {},
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        elevation: 2,
+        color: Colors.white,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                svgAsset!,
+                height: 40,
+                width: 40,
+                color: progressColor,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                title!,
+                style: Theme.of(context).textTheme.titleMedium!.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
       ),
     );
